@@ -3,10 +3,10 @@
 /*                                                        ::::::::            */
 /*   libft.h                                            :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: gianlucapirro <gianlucapirro@student.42      +#+                     */
+/*   By: gpirro <gpirro@student.42.fr>                +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/10/06 11:06:51 by gpirro        #+#    #+#                 */
-/*   Updated: 2021/10/25 20:11:43 by gpirro        ########   odam.nl         */
+/*   Updated: 2022/02/28 20:00:12 by gpirro        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,5 +49,7 @@ void			ft_putchar_fd(char c, int fd);
 void			ft_putstr_fd(char *s, int fd);
 void			ft_putendl_fd(char *s, int fd);
 void			ft_putnbr_fd(int n, int fd);
+int				ft_get2dlength(char **array);
+char			*ft_split_first(char const *s, char c);
 
 #endif

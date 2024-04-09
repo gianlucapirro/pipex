@@ -6,54 +6,83 @@
 /*   By: gpirro <gpirro@student.42.fr>                +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/02/01 11:30:24 by gpirro        #+#    #+#                 */
-/*   Updated: 2022/02/03 11:28:57 by gpirro        ########   odam.nl         */
+/*   Updated: 2022/02/28 20:07:33 by gpirro        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../pipex.h"
 
-void	*check_error(int argc)
-{
-	if (argc > 5)
-		write(2, "Error: too many arguments given\n", 32);
-	else if (argc < 5)
-		write(2, "Error: not enough arguments given\n", 34);
-	else
-		return (NULL);
-	exit(0);
-}
-
-char	**find_directories(char *envp[])
+char	**get_paths(char *envp[])
 {
 	int		i;
 	char	*path;
 	char	**paths;
 
+	if (envp == NULL)
+		exit_error(EXIT_FAILURE, "envp is empty");
 	i = 0;
-	while (strncmp(envp[i], "PATH", 4) != 0)
-		i ++;
+	while (envp[i])
+	{
+		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
+			break ;
+		i++;
+	}
 	path = ft_strtrim(envp[i], "PATH=");
+	if (path == NULL)
+		exit_error(EXIT_FAILURE, "strtrim returned NULL");
 	paths = ft_split(path, ':');
+	if (paths == NULL)
+		exit_error(EXIT_FAILURE, "split returned NULL");
+	free(path);
 	return (paths);
 }
 
 char	*append_cmd_to_path(char *path, char *cmd)
 {
-	char	*full_path;
+	char	*fullPath;
+	char	*tmp;
 
-	full_path = ft_strjoin(path, "/");
-	full_path = ft_strjoin(full_path, cmd);
-	return (full_path);
+	tmp = ft_strjoin(path, "/");
+	if (tmp == NULL)
+		exit_error(EXIT_FAILURE, "strjoin failed");
+	fullPath = ft_strjoin(tmp, cmd);
+	free(tmp);
+	if (fullPath == NULL)
+		exit_error(EXIT_FAILURE, "strjoin failed");
+	return (fullPath);
 }
 
-char	*create_full_path(char **paths, char *cmd)
+static int	find_amount_of_paths(char **paths)
 {
-	int		i;
-	char	**args;
+	int	i;
 
 	i = 0;
-	args = ft_split(cmd, ' ');
-	while (access(append_cmd_to_path(paths[i], args[0]), F_OK) != 0)
+	while (paths[i])
 		i++;
-	return (append_cmd_to_path(paths[i], args[0]));
+	return (i);
+}
+
+char	*find_exec_path(char **paths, char *cmd)
+{
+	int		i;
+	char	*path;
+	char	*exec;
+
+	if (access(cmd, X_OK) == 0)
+		return (ft_strdup(cmd));
+	if (paths == NULL)
+		exit_error(EXIT_FAILURE, "PATHS is empty");
+	exec = ft_split_first(cmd, ' ');
+	i = -1;
+	while (paths[++i])
+	{
+		path = append_cmd_to_path(paths[i], exec);
+		if (access(path, X_OK) == 0)
+			break ;
+		free(path);
+	}
+	if (i == find_amount_of_paths(paths) && (access(path, X_OK) != 0))
+		exit_error(EXIT_FAILURE, "Could not find executable path");
+	free(exec);
+	return (path);
 }
